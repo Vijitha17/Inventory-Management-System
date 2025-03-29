@@ -1,24 +1,45 @@
-const mongoose = require("mongoose");
+const { DataTypes, Model } = require('sequelize');
+const sequelize = require('../config/database');
 
-const tokenSchema = mongoose.Schema({
+class Token extends Model {}
+
+Token.init({
+  id: {
+    type: DataTypes.INTEGER,
+    primaryKey: true,
+    autoIncrement: true
+  },
   userId: {
-    type: mongoose.Schema.Types.ObjectId,
-    required: true,
-    ref: "user",
+    type: DataTypes.INTEGER,
+    allowNull: false,
+    references: {
+      model: 'users', // Match your actual table name
+      key: 'id'
+    }
   },
   token: {
-    type: String,
-    required: true,
-  },
-  createdAt: {
-    type: Date,
-    required: true,
+    type: DataTypes.STRING(64),
+    allowNull: false
   },
   expiresAt: {
-    type: Date,
-    required: true,
-  },
+    type: DataTypes.DATE,
+    allowNull: false
+  }
+}, {
+  sequelize,
+  modelName: 'Token',
+  tableName: 'tokens',
+  timestamps: true,
+  updatedAt: false,
+  
 });
 
-const Token = mongoose.model("Token", tokenSchema);
+Token.associate = (models) => {
+  Token.belongsTo(models.User, {
+    foreignKey: 'userId',
+    as: 'user'
+  });
+};
+
+
 module.exports = Token;

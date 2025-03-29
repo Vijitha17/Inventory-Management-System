@@ -5,6 +5,7 @@ const jwt = require("jsonwebtoken");
 const crypto = require("crypto");
 const Token = require("../models/tokenModel");
 const sendEmail = require("../utils/sendEmail");
+const { Op } = require('sequelize');
 
 // Generate Token
 const generateToken = (id) => {
@@ -27,7 +28,7 @@ const registerUser = asyncHandler(async (req, res) => {
         throw new Error("Password must be up to 6 characters");
     }
     // Check if user email already exists
-    const userExists = await User.findOne({ email });
+    const userExists = await User.findOne({ where: { email } });
 
     if (userExists) {
         res.status(400);
@@ -44,7 +45,7 @@ const registerUser = asyncHandler(async (req, res) => {
     });
 
     //   Generate Token
-    const token = generateToken(user._id);
+    const token = generateToken(user.id);
      
  
     // Send HTTP-only cookie
@@ -57,9 +58,9 @@ const registerUser = asyncHandler(async (req, res) => {
     });
 
     if (user) {
-        const { _id, name, email, photo, phone, bio } = user;
+        const { id, name, email, photo, phone, bio } = user;
         res.status(201).json({
-          _id, 
+          id, 
           name, 
           email, 
           photo, 
@@ -88,7 +89,7 @@ const loginUser = asyncHandler(async (req, res) => {
 
 
     // Check if user exists
-    const user = await User.findOne({ email });
+    const user = await User.findOne({ where: { email } });
 
     if (!user) {
         res.status(400);
@@ -100,7 +101,7 @@ const loginUser = asyncHandler(async (req, res) => {
     
 
     //   Generate Token
-    const token = generateToken(user._id);
+    const token = generateToken(user.id);
   
     if(passwordIsCorrect){
     // Send HTTP-only cookie
@@ -113,9 +114,9 @@ const loginUser = asyncHandler(async (req, res) => {
     });
     }
     if (user && passwordIsCorrect) {
-        const { _id, name, email, photo, phone, bio } = user;
+        const { id, name, email, photo, phone, bio } = user;
         res.status(200).json({
-          _id,
+          id,
           name,
           email,
           photo,
@@ -146,12 +147,12 @@ const logout = asyncHandler(async (req, res) => {
 // Get User Data
 
 const getUser = asyncHandler (async (req, res) => {
-    const user = await User.findById(req.user._id);
+    const user = await User.findByPk(req.user.id);
 
     if (user) {
-      const { _id, name, email, photo, phone, bio } = user;
+      const { id, name, email, photo, phone, bio } = user;
       res.status(200).json({
-        _id,
+        id,
         name,
         email,
         photo,
@@ -181,34 +182,54 @@ const loginStatus = asyncHandler(async (req, res) => {
 
 // Update User
 const updateUser = asyncHandler(async (req, res) => {
-    const user = await User.findById(req.user._id);
-  
-    if (user) {
-      const { name, email, photo, phone, bio } = user;
-      user.email = email;
-      user.name = req.body.name || name;
-      user.phone = req.body.phone || phone;
-      user.bio = req.body.bio || bio;
-      user.photo = req.body.photo || photo;
-  
+  const user = await User.findByPk(req.user.id);
+
+  if (user) {
+    const { name, email, photo, phone, bio } = user;
+    
+    // Email uniqueness check
+    if (req.body.email && req.body.email !== email) {
+      const emailExists = await User.findOne({ 
+        where: { email: req.body.email } 
+      });
+      if (emailExists) {
+        res.status(400);
+        throw new Error("Email already in use");
+      }
+      user.email = req.body.email;
+    }
+
+    // Update other fields
+    user.name = req.body.name || name;
+    user.phone = req.body.phone || phone;
+    user.bio = req.body.bio || bio;
+    user.photo = req.body.photo || photo;
+
+    // Wrap save operation in try/catch
+    try {
       const updatedUser = await user.save();
       res.status(200).json({
-        _id: updatedUser._id,
+        id: updatedUser.id,
         name: updatedUser.name,
         email: updatedUser.email,
         photo: updatedUser.photo,
         phone: updatedUser.phone,
         bio: updatedUser.bio,
       });
-    } else {
-      res.status(404);
-      throw new Error("User not found");
+    } catch (error) {
+      res.status(400);
+      throw new Error(error.message);
     }
-  });
+
+  } else {
+    res.status(404);
+    throw new Error("User not found");
+  }
+});
   
 //Change Password
 const changePassword = asyncHandler(async (req, res) => {
-    const user = await User.findById(req.user._id);
+    const user = await User.findByPk(req.user.id);
     const { oldPassword, password } = req.body;
   
     if (!user) {
@@ -220,13 +241,22 @@ const changePassword = asyncHandler(async (req, res) => {
       res.status(400);
       throw new Error("Please add old and new password");
     }
-  
+    
+
+    // Add password length check HERE ⬇️
+    if (password.length < 6) {
+      res.status(400);
+      throw new Error("Password must be at least 6 characters");
+    }
+
     // check if old password matches password in DB
     const passwordIsCorrect = await bcrypt.compare(oldPassword, user.password);
-  
+    
+
     // Save new password
     if (user && passwordIsCorrect) {
-      user.password = password;
+      const salt = await bcrypt.genSalt(10);
+      user.password = await bcrypt.hash(password, salt);
       await user.save();
       res.status(200).send("Password change successful");
     } else {
@@ -238,7 +268,7 @@ const changePassword = asyncHandler(async (req, res) => {
 //forgot password
 const forgotPassword = asyncHandler(async (req, res) => {
     const { email } = req.body;
-    const user = await User.findOne({ email });
+    const user = await User.findOne({ where: { email } });
   
     if (!user) {
       res.status(404);
@@ -246,13 +276,13 @@ const forgotPassword = asyncHandler(async (req, res) => {
     }
   
     // Delete token if it exists in DB
-    let token = await Token.findOne({ userId: user._id });
+    let token = await Token.findOne({ where: { userId: user.id } });
     if (token) {
-      await token.deleteOne();
+      await token.destroy();
     }
   
     // Create Reste Token
-    let resetToken = crypto.randomBytes(32).toString("hex") + user._id;
+    let resetToken = crypto.randomBytes(32).toString("hex") + user.id;
     console.log(resetToken);
   
     // Hash token before saving to DB
@@ -262,12 +292,18 @@ const forgotPassword = asyncHandler(async (req, res) => {
       .digest("hex");
   
     // Save Token to DB
-    await new Token({
-      userId: user._id,
+    await Token.destroy({
+      where: {
+        userId: user.id,
+        expiresAt: { [Op.lt]: Date.now() }
+      }
+    });
+
+    await Token.create({
+      userId: user.id,
       token: hashedToken,
-      createdAt: Date.now(),
-      expiresAt: Date.now() + 30 * (60 * 1000), // Thirty minutes
-    }).save();
+      expiresAt: Date.now() + 30 * 60 * 1000
+    });
   
     // Construct Reset Url
     const resetUrl = `${process.env.FRONTEND_URL}/resetpassword/${resetToken}`;
@@ -309,8 +345,10 @@ const resetPassword = asyncHandler(async (req, res) => {
   
     // fIND tOKEN in DB
     const userToken = await Token.findOne({
-      token: hashedToken,
-      expiresAt: { $gt: Date.now() },
+      where: { 
+        token: hashedToken,
+        expiresAt: { [Op.gt]: Date.now() }
+      }
     });
   
     if (!userToken) {
@@ -319,8 +357,9 @@ const resetPassword = asyncHandler(async (req, res) => {
     }
   
     // Find user
-    const user = await User.findOne({ _id: userToken.userId });
-    user.password = password;
+    const user = await User.findByPk(userToken.userId);
+    const salt = await bcrypt.genSalt(10);
+    user.password = await bcrypt.hash(password, salt); // ✅ Hashed
     await user.save();
     res.status(200).json({
       message: "Password Reset Successful, Please Login",

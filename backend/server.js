@@ -1,19 +1,18 @@
 const dotenv = require("dotenv").config();
 const express = require("express");
-const mongoose = require("mongoose");
+const { Sequelize } = require("sequelize");
 const bodyParser = require("body-parser");
 const cors = require("cors");
 const userRoute = require("./routes/userRoute");
 const errorHandler = require("./middleWare/errorMiddleware");
 const cookieParser = require("cookie-parser");
-
+const db = require("./config/database"); // Import your Sequelize config
 
 const app = express();
-
 const PORT = process.env.PORT || 5000;
 
 // Middlewares
-app.use(cors()); 
+app.use(cors());
 app.use(express.json());
 app.use(cookieParser());
 app.use(express.urlencoded({ extended: false }));
@@ -22,21 +21,32 @@ app.use(bodyParser.json());
 // Routes Middleware
 app.use("/api/users", userRoute);
 
-//Routes 
+// Routes
 app.get("/", (req, res) => {
   res.send("Home Page");
 });
 
-//Error Middleware
+// Error Middleware
 app.use(errorHandler);
 
-
-//connect to DB and start server
-mongoose
-  .connect(process.env.MONGO_URI)
-  .then(() => {
+// Database Connection and Server Start
+const startServer = async () => {
+  try {
+    // Test database connection
+    await db.authenticate();
+    console.log("Database connection established");
+    
+    // Sync models with database
+    await db.sync({ alter: true }); // Use { force: true } only for development!
+    console.log("Database synchronized");
+    
     app.listen(PORT, () => {
-      console.log(`Server Running on port ${PORT}`);
+      console.log(`Server running on port ${PORT}`);
     });
-  })
-  .catch((err) => console.log(err));
+  } catch (error) {
+    console.error("Unable to connect to database:", error);
+    process.exit(1);
+  }
+};
+
+startServer();

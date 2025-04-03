@@ -1,3 +1,4 @@
+const { sequelize } = require('./models');
 const dotenv = require("dotenv").config();
 const express = require("express");
 const { Sequelize } = require("sequelize");
@@ -7,6 +8,8 @@ const userRoute = require("./routes/userRoute");
 const errorHandler = require("./middleWare/errorMiddleware");
 const cookieParser = require("cookie-parser");
 const db = require("./config/database"); // Import your Sequelize config
+const collegeRoute = require('./routes/collegeRoute'); 
+const departmentRoute = require('./routes/departmentRoute');
 
 const app = express();
 const PORT = process.env.PORT || 5000;
@@ -20,6 +23,8 @@ app.use(bodyParser.json());
 
 // Routes Middleware
 app.use("/api/users", userRoute);
+app.use('/api/colleges', collegeRoute);
+app.use('/api/departments', departmentRoute);
 
 // Routes
 app.get("/", (req, res) => {
@@ -32,13 +37,11 @@ app.use(errorHandler);
 // Database Connection and Server Start
 const startServer = async () => {
   try {
-    // Test database connection
-    await db.authenticate();
-    console.log("Database connection established");
+    await sequelize.authenticate();
+    console.log('Database connection established');
     
-    // Sync models with database
-    await db.sync({ alter: true }); // Use { force: true } only for development!
-    console.log("Database synchronized");
+    await sequelize.sync({ alter: false, force: false });
+    console.log('Database synchronized');
     
     app.listen(PORT, () => {
       console.log(`Server running on port ${PORT}`);

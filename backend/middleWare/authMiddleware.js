@@ -1,7 +1,6 @@
 const asyncHandler = require("express-async-handler");
-const User = require("../models/userModel");
+const { User } = require("../models");
 const jwt = require("jsonwebtoken");
-
 
 const protect = asyncHandler(async (req, res, next) => {
     try {
@@ -9,7 +8,7 @@ const protect = asyncHandler(async (req, res, next) => {
         if (!token) {
           res.status(401);
           throw new Error("Not authorized, please login");
-        }f
+        } // Removed stray 'f' character
     
         // Verify Token
         const verified = jwt.verify(token, process.env.JWT_SECRET);
@@ -30,4 +29,4 @@ const protect = asyncHandler(async (req, res, next) => {
       }
 });
 
-module.exports = protect;
+module.exports = { protect };

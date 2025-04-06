@@ -1,0 +1,70 @@
+.home-page {
+  height: 100vh;
+  width: 100%;
+  background: linear-gradient(to right, #cce5d0, #a8d5ba);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  font-family: "Segoe UI", Tahoma, Geneva, Verdana, sans-serif;
+}
+
+.home-card {
+  display: flex;
+  width: 70%;
+  height: 70%;
+  background-color: #ffffff;
+  border-radius: 1.5rem;
+  box-shadow: 0 0 25px rgba(0, 0, 0, 0.15);
+  overflow: hidden;
+}
+
+.home-image-section {
+  width: 60%;
+  height: 100%;
+}
+
+.home-image {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.home-login-section {
+  width: 70%;
+  padding: 2rem;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  background-color: #f8f9fc;
+}
+
+.home-title {
+  font-size: 1.8rem;
+  font-weight: bold;
+  color: #333;
+  margin-bottom: 0.5rem;
+  text-align: center;
+}
+
+.home-subtext {
+  font-size: 1rem;
+  color: #666;
+  margin-bottom: 1.5rem;
+  text-align: center;
+}
+
+.home-login-button {
+  padding: 0.75rem 2rem;
+  font-size: 1rem;
+  background-color: #4e73df;
+  color: white;
+  border: none;
+  border-radius: 0.6rem;
+  cursor: pointer;
+  transition: background-color 0.3s;
+}
+
+.home-login-button:hover {
+  background-color: #2e59d9;
+}

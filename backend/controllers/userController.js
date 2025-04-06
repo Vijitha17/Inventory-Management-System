@@ -189,15 +189,17 @@ const loginUser = asyncHandler(async (req, res) => {
     });
   }
 
-
-  const token = generateToken(user.id);
+  const token = jwt.sign({ id: user.id }, process.env.JWT_SECRET, {
+    expiresIn: "1d",
+    
+  });
 
   res.cookie("token", token, {
     path: "/",
     httpOnly: true,
     expires: new Date(Date.now() + 86400000),
-    sameSite: "none",
-    secure: true
+    sameSite: "lax",
+    secure: false
   });
 
   res.status(200).json({

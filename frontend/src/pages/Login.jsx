@@ -60,7 +60,6 @@ function Login() {
         // Store token if needed
         if (data && data.token) {
           localStorage.setItem("token", data.token);
-          alert(`Welcome, ${data.name}`);
           navigate("/home");
         } else {
           throw new Error("Invalid login response: token not found");

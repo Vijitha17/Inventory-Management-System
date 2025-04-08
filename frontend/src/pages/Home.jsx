@@ -1,22 +1,24 @@
-import { useNavigate } from 'react-router-dom';
+import React, { useState } from 'react';
+import Sidebar from '../components/Sidebar';
+import Topbar from '../components/Topbar';
+import { Outlet } from 'react-router-dom';
 import './Home.css';
-import homepageImage from '../assets/Homeimage.png';
 
 function Home() {
-  const navigate = useNavigate();
+  const [sidebarOpen, setSidebarOpen] = useState(false);
+
+  const toggleSidebar = () => {
+    setSidebarOpen(!sidebarOpen);
+  };
 
   return (
-    <div className="home-page">
-      <div className="home-card">
-        <div className="home-image-section">
-          <img src={homepageImage} alt="Inventory" className="home-image" />
-        </div>
-        <div className="home-login-section">
-          <h1 className="home-title">Inventory Management System</h1>
-          <p className="home-subtext">Click below to login</p>
-          <button onClick={() => navigate('/login')} className="home-login-button">
-            Login
-          </button>
+    <div className="home-container">
+      <Topbar toggleSidebar={toggleSidebar} />
+      <div className="main-area">
+        <Sidebar isOpen={sidebarOpen} />
+        <div className={`content-area ${sidebarOpen ? 'shifted' : ''}`}>
+
+          <Outlet />
         </div>
       </div>
     </div>
@@ -24,4 +26,3 @@ function Home() {
 }
 
 export default Home;
-

@@ -3,9 +3,13 @@ import { Link, useLocation } from 'react-router-dom'; // Add useLocation
 import { 
   FaTh, 
   FaBox, 
+  FaClipboardCheck,
+  FaClipboardList,
+  FaUniversity,
   FaUsersCog,
-  FaChartLine,
-  FaCog 
+  FaExchangeAlt,
+  FaHandPaper,
+  FaChartBar
 } from 'react-icons/fa';
 import './Sidebar.css';
 
@@ -15,10 +19,14 @@ const Sidebar = ({ isOpen }) => {
   
   const menuItems = [
     { icon: <FaTh />, name: 'Dashboard', path: '/home' },
-    { icon: <FaBox />, name: 'Assets', path: '/home/assets' },
-    { icon: <FaUsersCog />, name: 'Users', path: '/home/users' },
-    { icon: <FaChartLine />, name: 'Analytics', path: '/home/analytics' },
-    { icon: <FaCog />, name: 'Settings', path: '/home/settings' }
+    { icon: <FaBox />, name: 'MyAssets', path: '/home/myassets' },
+    { icon: <FaClipboardList />, name: 'Inventory Items', path: '/home/inventoryitems' },
+    { icon: <FaClipboardCheck />, name: 'Assigned Assets', path: '/home/assignedassets' },
+    { icon: <FaUniversity />, name: 'Create Entities', path: '/home/createentities' },
+    { icon: <FaUsersCog />, name: 'User Management', path: '/home/usermanagement' },
+    { icon: <FaExchangeAlt />, name: 'Assign Assets', path: '/home/assignassets' },
+    { icon: <FaHandPaper />, name: 'Requests', path: '/home/requests' },
+    { icon: <FaChartBar />, name: 'Reports', path: '/home/reports' }
   ];
 
   return (
@@ -48,4 +56,5 @@ const Sidebar = ({ isOpen }) => {
 };
 
 export default Sidebar;
+
 

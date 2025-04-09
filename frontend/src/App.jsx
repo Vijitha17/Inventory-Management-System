@@ -4,8 +4,15 @@ import Landing from "./pages/Landing";
 import Login from "./pages/Login";
 import Home from "./pages/Home";  // layout with Sidebar + Topbar
 import Dashboard from './pages/Dashboard';
-import Assets from './pages/Assets';
-import Settings from './pages/Settings';
+import MyAssets from './pages/MyAssets';
+import InventoryItems from './pages/InventoryItems';
+import AssignedAssets from './pages/AssignedAssets';
+import CreateEntities from './pages/CreateEntities';
+import UserManagement from './pages/UserManagement';
+import AssignAssets from './pages/AssignAssets';
+import Requests from './pages/Requests';
+import Reports from './pages/Reports';
+
 
 function App() {
   return (
@@ -16,8 +23,15 @@ function App() {
 
         <Route path="/home" element={<Home />}>
           <Route index element={<Dashboard />} />
-          <Route path="assets" element={<Assets />} />
-         <Route path="settings" element={<Settings />} />
+          <Route path="myassets" element={<MyAssets />} />
+          <Route path="inventoryitems" element={<InventoryItems />} />
+          <Route path="assignedassets" element={<AssignedAssets />} />
+          <Route path="createentities" element={<CreateEntities />} />
+          <Route path="usermanagement" element={<UserManagement />} />
+          <Route path="assignassets" element={<AssignAssets />} />
+          <Route path="requests" element={<Requests />} />
+          <Route path="reports" element={<Reports />} />
+          
         </Route>
       </Routes>
     </BrowserRouter>
